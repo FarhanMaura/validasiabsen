@@ -70,4 +70,14 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/pengaturan', [PengaturanController::class, 'update'])->name('pengaturan.update')->middleware('role:tu');
 });
 
+Route::prefix('api')->group(function () {
+    // Rute Anda untuk absensi
+    Route::post('/absensi/check', [AbsensiController::class, 'checkabsen'])->name('api.absensi.check');
+
+    // Jika Anda memiliki rute '/user' dari Sanctum, pindahkan juga ke sini jika perlu
+    // Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+    //     return $request->user();
+    // });
+});
+
 require __DIR__.'/auth.php';
