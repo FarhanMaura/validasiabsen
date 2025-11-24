@@ -94,4 +94,9 @@ Route::get('/p/{nisn}', [SiswaController::class, 'publicProfile'])
 Route::post('/api/absensi/check', [AbsensiController::class, 'checkabsen'])->name('api.absensi.check');
 Route::post('/api/absensi/barcode', [AbsensiController::class, 'checkBarcode'])->name('api.absensi.barcode');
 
+// Debug route for RFID testing
+Route::get('/debug/rfid', function () {
+    return view('debug.rfid');
+})->middleware('auth');
+
 require __DIR__.'/auth.php';
