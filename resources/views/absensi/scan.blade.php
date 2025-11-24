@@ -172,7 +172,7 @@
 
                 if (data.status === 'success' || data.status === 'info') {
                     const resultData = data.data;
-                    nama.innerText = resultData.nama_siswa;
+                    nama.innerText = resultData.nama;
                     kelas.innerText = resultData.kelas;
                     
                     if (data.action === 'check_in' || (data.status === 'info' && resultData.waktu_masuk)) {
