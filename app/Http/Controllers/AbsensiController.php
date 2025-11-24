@@ -150,13 +150,25 @@ class AbsensiController extends Controller
             ], 404);
         }
 
-        $absensi = Absensi::where('siswa_id', $siswa->id)
-                          ->where('tanggal', $today)
-                          ->first();
+        // DOUBLE-TAP PROTECTION: Check if last scan was within 2 seconds
+        $lastScan = cache()->get("rfid_scan_{$siswa->id}");
+        if ($lastScan && $currentTime->diffInSeconds($lastScan) < 2) {
+            return response()->json([
+                'status' => 'info',
+                'message' => 'Scan terlalu cepat. Tunggu beberapa detik.',
+            ], 429);
+        }
 
         DB::beginTransaction();
         try {
+            // Cek apakah siswa sudah absen hari ini dengan row lock untuk mencegah race condition
+            $absensi = Absensi::where('siswa_id', $siswa->id)
+                              ->where('tanggal', $today)
+                              ->lockForUpdate()
+                              ->first();
+
             if (!$absensi) {
+                // Belum ada absensi hari ini - MASUK
                 $statusMasuk = ($currentTime->greaterThan(Carbon::parse($jamTerlambatMasuk))) ? 'terlambat' : 'hadir';
 
                 $absensi = Absensi::create([
@@ -167,6 +179,9 @@ class AbsensiController extends Controller
                     'keterangan'  => ($statusMasuk === 'terlambat') ? 'Terlambat masuk' : null,
                 ]);
 
+                // Set cache to prevent double-tap
+                cache()->put("rfid_scan_{$siswa->id}", $currentTime, now()->addSeconds(3));
+
                 DB::commit();
                 Log::info('RFID Absen: Absensi masuk dicatat.', [
                     'siswa_id' => $siswa->id,
@@ -174,7 +189,8 @@ class AbsensiController extends Controller
                     'waktu_masuk' => $absensi->waktu_masuk,
                     'status_masuk' => $absensi->status_masuk
                 ]);
-
+                
+                // Send notification
                 $this->sendWhatsAppNotification('check_in', $siswa, $absensi);
 
                 return response()->json([
@@ -182,7 +198,7 @@ class AbsensiController extends Controller
                     'action'  => 'check_in',
                     'message' => 'Absensi masuk dicatat.',
                     'data'    => [
-                        'nama_siswa'    => $siswa->nama,
+                        'nama'          => $siswa->nama,
                         'kelas'         => $siswa->kelas->nama_lengkap,
                         'waktu_masuk'   => $absensi->waktu_masuk,
                         'status_masuk'  => $absensi->status_masuk,
@@ -196,6 +212,9 @@ class AbsensiController extends Controller
                     $absensi->waktu_pulang = $currentTime->toTimeString();
                     $absensi->status_pulang = $statusPulang;
                     $absensi->save();
+
+                    // Set cache to prevent double-tap
+                    cache()->put("rfid_scan_{$siswa->id}", $currentTime, now()->addSeconds(3));
 
                     DB::commit();
                     Log::info('RFID Absen: Absensi pulang dicatat.', [
@@ -212,7 +231,7 @@ class AbsensiController extends Controller
                         'action'  => 'check_out',
                         'message' => 'Absensi pulang dicatat.',
                         'data'    => [
-                            'nama_siswa'     => $siswa->nama,
+                            'nama'           => $siswa->nama,
                             'kelas'          => $siswa->kelas->nama_lengkap,
                             'waktu_pulang'   => $absensi->waktu_pulang,
                             'status_pulang'  => $absensi->status_pulang,
@@ -230,7 +249,7 @@ class AbsensiController extends Controller
                         'status'  => 'info',
                         'message' => 'Siswa sudah melakukan absensi masuk dan pulang hari ini.',
                         'data'    => [
-                            'nama_siswa'     => $siswa->nama,
+                            'nama'           => $siswa->nama,
                             'kelas'          => $siswa->kelas->nama_lengkap,
                             'waktu_masuk'    => $absensi->waktu_masuk,
                             'status_masuk'   => $absensi->status_masuk,
@@ -296,13 +315,14 @@ class AbsensiController extends Controller
         // Ambil pengaturan waktu
         $toleransiTerlambat = Pengaturan::getValue('waktu_toleransi_terlambat') ?? '07:30';
 
-        // Cek absensi hari ini
-        $absensi = Absensi::where('siswa_id', $siswa->id)
-                          ->where('tanggal', $today)
-                          ->first();
-
         DB::beginTransaction();
         try {
+            // Cek absensi hari ini dengan row lock untuk mencegah race condition
+            $absensi = Absensi::where('siswa_id', $siswa->id)
+                              ->where('tanggal', $today)
+                              ->lockForUpdate()
+                              ->first();
+
             if (!$absensi) {
                 // Check-in (Datang)
                 $statusMasuk = $currentTime->format('H:i') <= $toleransiTerlambat ? 'hadir' : 'terlambat';
@@ -381,7 +401,10 @@ class AbsensiController extends Controller
 
     public function createManual()
     {
-        $siswas = Siswa::where('status_aktif', true)->with('kelas')->orderBy('nama')->get();
+        $siswas = Siswa::where('status_aktif', true)
+            ->with('kelas')
+            ->orderBy('nama')
+            ->get();
         return view('absensi.create_manual', compact('siswas'));
     }
 
