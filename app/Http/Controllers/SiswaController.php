@@ -89,6 +89,12 @@ class SiswaController extends Controller
         return view('siswa.card', compact('siswa'));
     }
 
+    public function publicProfile($nisn)
+    {
+        $siswa = Siswa::where('nisn', $nisn)->firstOrFail();
+        return view('siswa.public', compact('siswa'));
+    }
+
     public function import(Request $request): RedirectResponse
     {
         $request->validate([

@@ -78,7 +78,14 @@ Route::middleware(['auth'])->group(function () {
 
     // Kartu Siswa
     Route::get('/siswa/{siswa}/card', [SiswaController::class, 'card'])->name('siswa.card');
+
+    // Manual Attendance (Guru & TU)
+    Route::get('/absensi/manual', [AbsensiController::class, 'createManual'])->name('absensi.manual');
+    Route::post('/absensi/manual', [AbsensiController::class, 'storeManual'])->name('absensi.storeManual');
 });
+
+// Public Profile (No Auth Required)
+Route::get('/p/{nisn}', [SiswaController::class, 'publicProfile'])->name('siswa.public');
 
 Route::prefix('api')->group(function () {
     // Rute Anda untuk absensi
