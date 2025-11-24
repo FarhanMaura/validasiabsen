@@ -82,6 +82,7 @@ Route::middleware(['auth'])->group(function () {
     // Manual Attendance (Guru & TU)
     Route::get('/absensi/manual', [AbsensiController::class, 'createManual'])->name('absensi.manual');
     Route::post('/absensi/manual', [AbsensiController::class, 'storeManual'])->name('absensi.storeManual');
+    Route::delete('/absensi/{absensi}', [AbsensiController::class, 'destroy'])->name('absensi.destroy');
 });
 
 // Public Profile (No Auth Required)

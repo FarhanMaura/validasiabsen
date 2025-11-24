@@ -394,6 +394,12 @@ class AbsensiController extends Controller
         return redirect()->route('absensi.index')->with('success', 'Absensi manual berhasil disimpan.');
     }
 
+    public function destroy(Absensi $absensi)
+    {
+        $absensi->delete();
+        return redirect()->route('absensi.index')->with('success', 'Data absensi berhasil dihapus.');
+    }
+
     private function sendWhatsAppNotification(string $type, Siswa $siswa, Absensi $absensi): void
     {
         $fonnteToken = config('app.fonnte_token');
