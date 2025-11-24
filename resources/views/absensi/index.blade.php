@@ -182,6 +182,9 @@
                                 <option value="">Semua Status</option>
                                 <option value="hadir" {{ request('status_masuk') == 'hadir' ? 'selected' : '' }}>Hadir</option>
                                 <option value="terlambat" {{ request('status_masuk') == 'terlambat' ? 'selected' : '' }}>Terlambat</option>
+                                <option value="izin" {{ request('status_masuk') == 'izin' ? 'selected' : '' }}>Izin</option>
+                                <option value="sakit" {{ request('status_masuk') == 'sakit' ? 'selected' : '' }}>Sakit</option>
+                                <option value="alfa" {{ request('status_masuk') == 'alfa' ? 'selected' : '' }}>Alfa</option>
                                 <option value="tidak_hadir" {{ request('status_masuk') == 'tidak_hadir' ? 'selected' : '' }}>Tidak Hadir</option>
                             </select>
                         </div>

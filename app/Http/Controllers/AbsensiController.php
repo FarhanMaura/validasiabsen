@@ -34,6 +34,10 @@ class AbsensiController extends Controller
             });
         }
 
+        if ($request->has('status_masuk') && $request->status_masuk) {
+            $query->where('status_masuk', $request->status_masuk);
+        }
+
         $absensi = $query->paginate(20);
         $kelas = Kelas::all();
 

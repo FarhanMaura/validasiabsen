@@ -42,6 +42,9 @@
                 <a href="{{ route('absensi.scan') }}" class="flex items-center px-3 py-2 rounded-md text-gray-900 hover:bg-green-50 hover:text-[#1FAE59] transition-colors {{ request()->routeIs('absensi.scan') ? 'bg-green-50 text-[#1FAE59] font-medium' : '' }}">
                     <i class="fas fa-qrcode w-5 mr-3"></i>Scan Barcode
                 </a>
+                <a href="{{ route('absensi.manual') }}" class="flex items-center px-3 py-2 rounded-md text-gray-900 hover:bg-green-50 hover:text-[#1FAE59] transition-colors {{ request()->routeIs('absensi.manual') ? 'bg-green-50 text-[#1FAE59] font-medium' : '' }}">
+                    <i class="fas fa-edit w-5 mr-3"></i>Input Manual
+                </a>
                 @endif
             @endif
         </div>
@@ -115,6 +118,9 @@
                 @if(auth()->user()->role === 'guru')
                 <a href="{{ route('absensi.scan') }}" class="flex items-center px-3 py-3 rounded-lg hover:bg-green-600 transition-all duration-200 {{ request()->routeIs('absensi.scan') ? 'bg-green-600 shadow-md' : '' }}">
                     <i class="fas fa-qrcode w-5 mr-3"></i>Scan Barcode
+                </a>
+                <a href="{{ route('absensi.manual') }}" class="flex items-center px-3 py-3 rounded-lg hover:bg-green-600 transition-all duration-200 {{ request()->routeIs('absensi.manual') ? 'bg-green-600 shadow-md' : '' }}">
+                    <i class="fas fa-edit w-5 mr-3"></i>Input Manual
                 </a>
                 @endif
             @endif
