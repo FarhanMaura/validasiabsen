@@ -28,6 +28,9 @@
                 <a href="{{ route('absensi.index') }}" class="flex items-center px-3 py-2 rounded-md text-gray-900 hover:bg-green-50 hover:text-[#1FAE59] transition-colors {{ request()->routeIs('absensi.*') ? 'bg-green-50 text-[#1FAE59] font-medium' : '' }}">
                     <i class="fas fa-clipboard-check w-5 mr-3"></i>Absensi
                 </a>
+                <a href="{{ route('users.index') }}" class="flex items-center px-3 py-2 rounded-md text-gray-900 hover:bg-green-50 hover:text-[#1FAE59] transition-colors {{ request()->routeIs('users.*') ? 'bg-green-50 text-[#1FAE59] font-medium' : '' }}">
+                    <i class="fas fa-user-tie w-5 mr-3"></i>Data Guru
+                </a>
             @else
                 <a href="{{ route('siswa.index') }}" class="flex items-center px-3 py-2 rounded-md text-gray-900 hover:bg-green-50 hover:text-[#1FAE59] transition-colors {{ request()->routeIs('siswa.index') ? 'bg-green-50 text-[#1FAE59] font-medium' : '' }}">
                     <i class="fas fa-users w-5 mr-3"></i>Data Siswa
@@ -35,6 +38,11 @@
                 <a href="{{ route('absensi.index') }}" class="flex items-center px-3 py-2 rounded-md text-gray-900 hover:bg-green-50 hover:text-[#1FAE59] transition-colors {{ request()->routeIs('absensi.index') ? 'bg-green-50 text-[#1FAE59] font-medium' : '' }}">
                     <i class="fas fa-clipboard-check w-5 mr-3"></i>Absensi
                 </a>
+                @if(auth()->user()->role === 'guru')
+                <a href="{{ route('absensi.scan') }}" class="flex items-center px-3 py-2 rounded-md text-gray-900 hover:bg-green-50 hover:text-[#1FAE59] transition-colors {{ request()->routeIs('absensi.scan') ? 'bg-green-50 text-[#1FAE59] font-medium' : '' }}">
+                    <i class="fas fa-qrcode w-5 mr-3"></i>Scan Barcode
+                </a>
+                @endif
             @endif
         </div>
 
@@ -94,6 +102,9 @@
                 <a href="{{ route('absensi.index') }}" class="flex items-center px-3 py-3 rounded-lg hover:bg-green-600 transition-all duration-200 {{ request()->routeIs('absensi.*') ? 'bg-green-600 shadow-md' : '' }}">
                     <i class="fas fa-clipboard-check w-5 mr-3"></i>Absensi
                 </a>
+                <a href="{{ route('users.index') }}" class="flex items-center px-3 py-3 rounded-lg hover:bg-green-600 transition-all duration-200 {{ request()->routeIs('users.*') ? 'bg-green-600 shadow-md' : '' }}">
+                    <i class="fas fa-user-tie w-5 mr-3"></i>Data Guru
+                </a>
             @else
                 <a href="{{ route('siswa.index') }}" class="flex items-center px-3 py-3 rounded-lg hover:bg-green-600 transition-all duration-200 {{ request()->routeIs('siswa.index') ? 'bg-green-600 shadow-md' : '' }}">
                     <i class="fas fa-users w-5 mr-3"></i>Data Siswa
@@ -101,6 +112,11 @@
                 <a href="{{ route('absensi.index') }}" class="flex items-center px-3 py-3 rounded-lg hover:bg-green-600 transition-all duration-200 {{ request()->routeIs('absensi.index') ? 'bg-green-600 shadow-md' : '' }}">
                     <i class="fas fa-clipboard-check w-5 mr-3"></i>Absensi
                 </a>
+                @if(auth()->user()->role === 'guru')
+                <a href="{{ route('absensi.scan') }}" class="flex items-center px-3 py-3 rounded-lg hover:bg-green-600 transition-all duration-200 {{ request()->routeIs('absensi.scan') ? 'bg-green-600 shadow-md' : '' }}">
+                    <i class="fas fa-qrcode w-5 mr-3"></i>Scan Barcode
+                </a>
+                @endif
             @endif
         </nav>
 

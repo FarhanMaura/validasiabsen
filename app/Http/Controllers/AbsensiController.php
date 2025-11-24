@@ -252,6 +252,123 @@ class AbsensiController extends Controller
         }
     }
 
+    public function scan(): View
+    {
+        return view('absensi.scan');
+    }
+
+    public function checkBarcode(Request $request)
+    {
+        $request->validate([
+            'nisn' => 'required|string|max:255',
+        ]);
+
+        $nisn = $request->input('nisn');
+        $today = Carbon::today()->toDateString();
+        $currentTime = Carbon::now();
+
+        $jamTerlambatMasuk = config('app.jam_terlambat_masuk', '07:40:00');
+        $jamPulangTepatWaktu = config('app.jam_pulang_tepat_waktu', '15:50:00');
+
+        $siswa = Siswa::where('nisn', $nisn)
+                      ->where('status_aktif', true)
+                      ->with('kelas')
+                      ->first();
+
+        if (!$siswa) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Siswa tidak ditemukan atau tidak aktif.'
+            ], 404);
+        }
+
+        $absensi = Absensi::where('siswa_id', $siswa->id)
+                          ->where('tanggal', $today)
+                          ->first();
+
+        DB::beginTransaction();
+        try {
+            if (!$absensi) {
+                $statusMasuk = ($currentTime->greaterThan(Carbon::parse($jamTerlambatMasuk))) ? 'terlambat' : 'hadir';
+
+                $absensi = Absensi::create([
+                    'siswa_id'    => $siswa->id,
+                    'tanggal'     => $today,
+                    'waktu_masuk' => $currentTime->toTimeString(),
+                    'status_masuk' => $statusMasuk,
+                    'keterangan'  => ($statusMasuk === 'terlambat') ? 'Terlambat masuk' : null,
+                ]);
+
+                DB::commit();
+                
+                // Send notification
+                $this->sendWhatsAppNotification('check_in', $siswa, $absensi);
+
+                return response()->json([
+                    'status'  => 'success',
+                    'action'  => 'check_in',
+                    'message' => 'Absensi masuk dicatat.',
+                    'data'    => [
+                        'nama_siswa'    => $siswa->nama,
+                        'kelas'         => $siswa->kelas->nama_lengkap,
+                        'waktu_masuk'   => $absensi->waktu_masuk,
+                        'status_masuk'  => $absensi->status_masuk,
+                        'tanggal'       => $absensi->tanggal,
+                    ]
+                ]);
+            } else {
+                if ($absensi->waktu_pulang === null) {
+                    $statusPulang = ($currentTime->lessThan(Carbon::parse($jamPulangTepatWaktu))) ? 'cepat' : 'tepat_waktu';
+
+                    $absensi->waktu_pulang = $currentTime->toTimeString();
+                    $absensi->status_pulang = $statusPulang;
+                    $absensi->save();
+
+                    DB::commit();
+
+                    // Send notification
+                    $this->sendWhatsAppNotification('check_out', $siswa, $absensi);
+
+                    return response()->json([
+                        'status'  => 'success',
+                        'action'  => 'check_out',
+                        'message' => 'Absensi pulang dicatat.',
+                        'data'    => [
+                            'nama_siswa'     => $siswa->nama,
+                            'kelas'          => $siswa->kelas->nama_lengkap,
+                            'waktu_pulang'   => $absensi->waktu_pulang,
+                            'status_pulang'  => $absensi->status_pulang,
+                            'tanggal'        => $absensi->tanggal,
+                        ]
+                    ]);
+                } else {
+                    DB::rollBack();
+                    return response()->json([
+                        'status'  => 'info',
+                        'message' => 'Siswa sudah melakukan absensi masuk dan pulang hari ini.',
+                        'data'    => [
+                            'nama_siswa'     => $siswa->nama,
+                            'kelas'          => $siswa->kelas->nama_lengkap,
+                            'waktu_masuk'    => $absensi->waktu_masuk,
+                            'status_masuk'   => $absensi->status_masuk,
+                            'waktu_pulang'   => $absensi->waktu_pulang,
+                            'status_pulang'  => $absensi->status_pulang,
+                            'tanggal'        => $absensi->tanggal,
+                        ]
+                    ], 200);
+                }
+            }
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Barcode Absen: Error saat memproses absensi Barcode: ' . $e->getMessage());
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Terjadi kesalahan internal server.'
+            ], 500);
+        }
+    }
+
     private function sendWhatsAppNotification(string $type, Siswa $siswa, Absensi $absensi): void
     {
         $fonnteToken = config('app.fonnte_token');

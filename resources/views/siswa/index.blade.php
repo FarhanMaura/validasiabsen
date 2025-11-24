@@ -184,6 +184,11 @@
                                            title="Edit">
                                             <i class="fas fa-edit"></i>
                                         </a>
+                                        <a href="{{ route('siswa.card', $siswa) }}" target="_blank"
+                                           class="text-purple-600 hover:text-purple-900 transition-colors duration-200 p-2 rounded-lg hover:bg-purple-50"
+                                           title="Cetak Kartu">
+                                            <i class="fas fa-id-card"></i>
+                                        </a>
                                         <form action="{{ route('siswa.destroy', $siswa) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus siswa ini?')">
                                             @csrf
                                             @method('DELETE')

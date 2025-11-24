@@ -84,6 +84,11 @@ class SiswaController extends Controller
             ->with('success', 'Data siswa berhasil dihapus.');
     }
 
+    public function card(Siswa $siswa)
+    {
+        return view('siswa.card', compact('siswa'));
+    }
+
     public function import(Request $request): RedirectResponse
     {
         $request->validate([

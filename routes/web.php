@@ -6,6 +6,7 @@ use App\Http\Controllers\SiswaController;
 use App\Http\Controllers\KelasController;
 use App\Http\Controllers\AbsensiController;
 use App\Http\Controllers\PengaturanController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -61,6 +62,9 @@ Route::middleware(['auth'])->group(function () {
     // Absensi
     Route::get('/absensi', [AbsensiController::class, 'index'])->name('absensi.index');
     Route::get('/absensi/rekap', [AbsensiController::class, 'rekap'])->name('absensi.rekap');
+    
+    // Scan Barcode (Hanya Guru)
+    Route::get('/absensi/scan', [AbsensiController::class, 'scan'])->name('absensi.scan')->middleware('role:guru');
 
     // Export absensi (hanya TU)
     Route::get('/absensi/export', [AbsensiController::class, 'export'])->name('absensi.export')->middleware('role:tu');
@@ -68,11 +72,18 @@ Route::middleware(['auth'])->group(function () {
     // Pengaturan (hanya TU)
     Route::get('/pengaturan', [PengaturanController::class, 'index'])->name('pengaturan.index')->middleware('role:tu');
     Route::put('/pengaturan', [PengaturanController::class, 'update'])->name('pengaturan.update')->middleware('role:tu');
+
+    // User Management (Hanya TU)
+    Route::resource('users', UserController::class)->middleware('role:tu');
+
+    // Kartu Siswa
+    Route::get('/siswa/{siswa}/card', [SiswaController::class, 'card'])->name('siswa.card');
 });
 
 Route::prefix('api')->group(function () {
     // Rute Anda untuk absensi
     Route::post('/absensi/check', [AbsensiController::class, 'checkabsen'])->name('api.absensi.check');
+    Route::post('/absensi/barcode', [AbsensiController::class, 'checkBarcode'])->name('api.absensi.barcode');
 
     // Jika Anda memiliki rute '/user' dari Sanctum, pindahkan juga ke sini jika perlu
     // Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
