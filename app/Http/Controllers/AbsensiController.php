@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Absensi;
 use App\Models\Siswa;
 use App\Models\Kelas;
+use App\Models\Pengaturan;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\Response;
@@ -263,15 +264,8 @@ class AbsensiController extends Controller
             'nisn' => 'required|string',
         ]);
 
-        // Extract NISN from URL if full URL is scanned
-        $input = $request->input('nisn');
-        $nisn = $input;
-        if (filter_var($input, FILTER_VALIDATE_URL)) {
-            // Assuming URL format: domain.com/p/{nisn}
-            $parts = explode('/', rtrim($input, '/'));
-            $nisn = end($parts);
-        }
-
+        $nisn = $request->input('nisn');
+        
         $siswa = Siswa::where('nisn', $nisn)->where('status_aktif', true)->first();
 
         if (!$siswa) {

@@ -47,7 +47,7 @@
 
     <script>
         new QRCode(document.getElementById("qrcode"), {
-            text: "{{ route('siswa.public', $siswa->nisn) }}",
+            text: "{{ $siswa->nisn }}",
             width: 200,
             height: 200,
             colorDark : "#000000",
