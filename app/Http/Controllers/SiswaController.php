@@ -11,9 +11,11 @@ use App\Imports\SiswaImport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Response;
 
+use App\Http\Controllers\AbsensiController;
+
 class SiswaController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
         $siswas = Siswa::with('kelas')
             ->latest()
@@ -92,6 +94,15 @@ class SiswaController extends Controller
     public function publicProfile($nisn)
     {
         $siswa = Siswa::where('nisn', $nisn)->firstOrFail();
+
+        // Jika user yang login adalah Guru, otomatis catat absensi
+        if (auth()->check() && auth()->user()->role === 'guru') {
+            $absensiController = new AbsensiController();
+            $result = $absensiController->processAttendance($siswa);
+            
+            return view('siswa.public', compact('siswa', 'result'));
+        }
+
         return view('siswa.public', compact('siswa'));
     }
 

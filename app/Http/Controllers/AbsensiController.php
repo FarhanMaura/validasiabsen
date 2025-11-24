@@ -281,6 +281,17 @@ class AbsensiController extends Controller
             ], 404);
         }
 
+        $result = $this->processAttendance($siswa);
+
+        if ($result['status'] === 'error') {
+            return response()->json($result, 500);
+        }
+
+        return response()->json($result);
+    }
+
+    public function processAttendance(Siswa $siswa)
+    {
         $today = Carbon::today()->toDateString();
         $currentTime = Carbon::now();
         
@@ -308,7 +319,7 @@ class AbsensiController extends Controller
                 $this->sendWhatsAppNotification('check_in', $siswa, $absensi);
 
                 DB::commit();
-                return response()->json([
+                return [
                     'status' => 'success',
                     'message' => 'Absen masuk berhasil dicatat.',
                     'data' => [
@@ -318,15 +329,23 @@ class AbsensiController extends Controller
                         'status' => ucfirst($statusMasuk),
                         'type' => 'check_in'
                     ]
-                ]);
+                ];
             } else {
                 // Sudah ada record absensi
                 if ($absensi->waktu_pulang) {
                     DB::rollBack();
-                    return response()->json([
+                    return [
                         'status' => 'info',
                         'message' => 'Siswa sudah melakukan absen pulang hari ini.',
-                    ]);
+                        'data' => [
+                            'nama' => $siswa->nama,
+                            'kelas' => $siswa->kelas->nama_lengkap,
+                            'waktu_masuk' => $absensi->waktu_masuk,
+                            'status_masuk' => $absensi->status_masuk,
+                            'waktu_pulang' => $absensi->waktu_pulang,
+                            'status_pulang' => $absensi->status_pulang,
+                        ]
+                    ];
                 }
 
                 // Check-out (Pulang)
@@ -340,7 +359,7 @@ class AbsensiController extends Controller
                 $this->sendWhatsAppNotification('check_out', $siswa, $absensi);
 
                 DB::commit();
-                return response()->json([
+                return [
                     'status' => 'success',
                     'message' => 'Absen pulang berhasil dicatat.',
                     'data' => [
@@ -350,15 +369,15 @@ class AbsensiController extends Controller
                         'status' => ucfirst($statusPulang),
                         'type' => 'check_out'
                     ]
-                ]);
+                ];
             }
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::error('Barcode Error: ' . $e->getMessage());
-            return response()->json([
+            return [
                 'status' => 'error',
                 'message' => 'Terjadi kesalahan sistem.',
-            ], 500);
+            ];
         }
     }
 

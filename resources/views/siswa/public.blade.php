@@ -8,6 +8,14 @@
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
     <div class="bg-white p-8 rounded-lg shadow-lg max-w-sm w-full text-center">
+        @if(isset($result))
+            <div class="mb-4 p-3 rounded-lg {{ $result['status'] == 'success' ? 'bg-green-100 text-green-800' : ($result['status'] == 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800') }}">
+                <p class="font-bold">{{ $result['message'] }}</p>
+                @if(isset($result['data']['waktu']))
+                    <p class="text-sm">Waktu: {{ $result['data']['waktu'] }}</p>
+                @endif
+            </div>
+        @endif
         <div class="w-24 h-24 bg-gray-300 rounded-full mx-auto mb-4 flex items-center justify-center text-gray-500 text-3xl font-bold">
             {{ substr($siswa->nama, 0, 1) }}
         </div>
