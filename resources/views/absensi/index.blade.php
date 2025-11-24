@@ -394,28 +394,9 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Add real-time filter updates
-            const filterInputs = document.querySelectorAll('#tanggal, #kelas_id, #status_masuk');
-            let filterTimeout;
-
-            filterInputs.forEach(input => {
-                input.addEventListener('change', function() {
-                    clearTimeout(filterTimeout);
-                    filterTimeout = setTimeout(() => {
-                        // Add loading state
-                        const submitBtn = document.querySelector('button[type="submit"]');
-                        const originalText = submitBtn.innerHTML;
-                        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Memfilter...</span>';
-                        submitBtn.disabled = true;
-
-                        // Submit form after short delay
-                        setTimeout(() => {
-                            document.querySelector('form').submit();
-                        }, 500);
-                    }, 800);
-                });
-            });
-
+            // Removed auto-filter to prevent logout issue
+            // Users must click "Terapkan Filter" button manually
+            
             // Add hover effects to table rows
             const tableRows = document.querySelectorAll('tbody tr');
             tableRows.forEach(row => {
