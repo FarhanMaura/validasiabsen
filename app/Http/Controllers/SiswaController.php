@@ -95,15 +95,11 @@ class SiswaController extends Controller
     {
         $siswa = Siswa::where('nisn', $nisn)->firstOrFail();
 
-        // Jika user yang login adalah Guru, otomatis catat absensi
-        if (auth()->check() && auth()->user()->role === 'guru') {
-            $absensiController = new AbsensiController();
-            $result = $absensiController->processAttendance($siswa);
-            
-            return view('siswa.public', compact('siswa', 'result'));
-        }
-
-        return view('siswa.public', compact('siswa'));
+        // Otomatis catat absensi karena route sudah diproteksi untuk Guru
+        $absensiController = new AbsensiController();
+        $result = $absensiController->processAttendance($siswa);
+        
+        return view('siswa.public', compact('siswa', 'result'));
     }
 
     public function import(Request $request): RedirectResponse

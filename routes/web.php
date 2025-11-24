@@ -85,8 +85,10 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/absensi/{absensi}', [AbsensiController::class, 'destroy'])->name('absensi.destroy');
 });
 
-// Public Profile (No Auth Required)
-Route::get('/p/{nisn}', [SiswaController::class, 'publicProfile'])->name('siswa.public');
+// Public Profile (Restricted to Guru)
+Route::get('/p/{nisn}', [SiswaController::class, 'publicProfile'])
+    ->name('siswa.public')
+    ->middleware(['auth', 'role:guru']);
 
 Route::prefix('api')->group(function () {
     // Rute Anda untuk absensi
