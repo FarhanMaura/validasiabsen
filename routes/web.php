@@ -90,15 +90,8 @@ Route::get('/p/{nisn}', [SiswaController::class, 'publicProfile'])
     ->name('siswa.public')
     ->middleware(['auth', 'role:guru']);
 
-Route::prefix('api')->group(function () {
-    // Rute Anda untuk absensi
-    Route::post('/absensi/check', [AbsensiController::class, 'checkabsen'])->name('api.absensi.check');
-    Route::post('/absensi/barcode', [AbsensiController::class, 'checkBarcode'])->name('api.absensi.barcode');
-
-    // Jika Anda memiliki rute '/user' dari Sanctum, pindahkan juga ke sini jika perlu
-    // Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    //     return $request->user();
-    // });
-});
+// API Routes for RFID and Barcode
+Route::post('/api/absensi/check', [AbsensiController::class, 'checkabsen'])->name('api.absensi.check');
+Route::post('/api/absensi/barcode', [AbsensiController::class, 'checkBarcode'])->name('api.absensi.barcode');
 
 require __DIR__.'/auth.php';
