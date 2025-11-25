@@ -98,21 +98,76 @@ class SiswaController extends Controller
         // Otomatis catat absensi karena route sudah diproteksi untuk Guru
         $absensiController = new AbsensiController();
         $result = $absensiController->processAttendance($siswa);
-        
+
         return view('siswa.public', compact('siswa', 'result'));
     }
 
     public function import(Request $request): RedirectResponse
-    {
-        $request->validate([
-            'file' => 'required|mimes:xlsx,xls,csv'
+{
+    \Log::info('🎬 IMPORT PROCESS STARTED');
+    \Log::info('📁 FILE INFO:', [
+        'has_file' => $request->hasFile('file'),
+        'file_name' => $request->file('file') ? $request->file('file')->getClientOriginalName() : 'no file',
+        'file_size' => $request->file('file') ? $request->file('file')->getSize() : 0
+    ]);
+
+    $request->validate([
+        'file' => 'required|mimes:xlsx,xls,csv|max:10240'
+    ], [
+        'file.required' => 'File import harus dipilih.',
+        'file.mimes' => 'File harus berformat: xlsx, xls, atau csv.',
+        'file.max' => 'File tidak boleh lebih dari 10MB.'
+    ]);
+
+    \Log::info('✅ FILE VALIDATION PASSED');
+
+    try {
+        $file = $request->file('file');
+        if (!$file->getSize()) {
+            \Log::warning('❌ FILE IS EMPTY');
+            return redirect()->route('siswa.index')
+                ->with('error', 'File yang diupload kosong.');
+        }
+
+        \Log::info('🚀 STARTING EXCEL IMPORT');
+        $import = new SiswaImport;
+
+        Excel::import($import, $file);
+
+        \Log::info('🏁 IMPORT COMPLETED', [
+            'imported_count' => $import->getImportedCount(),
+            'updated_count' => $import->getUpdatedCount()
         ]);
 
-        Excel::import(new SiswaImport, $request->file('file'));
+        $message = 'Data siswa berhasil diimport. ';
+        if ($import->getImportedCount() > 0) {
+            $message .= $import->getImportedCount() . ' data baru ditambahkan. ';
+        }
+        if ($import->getUpdatedCount() > 0) {
+            $message .= $import->getUpdatedCount() . ' data diperbarui. ';
+        }
+
+        if ($import->getImportedCount() === 0 && $import->getUpdatedCount() === 0) {
+            $message = 'Tidak ada data yang diimport. Periksa format file dan pastikan kelas sudah ada di database.';
+        }
+
+        \Log::info('📤 REDIRECTING WITH MESSAGE: ' . $message);
+        return redirect()->route('siswa.index')
+            ->with('success', $message);
+
+    } catch (\Exception $e) {
+        \Log::error('💥 IMPORT ERROR:', [
+            'message' => $e->getMessage(),
+            'exception' => get_class($e),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => $e->getTraceAsString()
+        ]);
 
         return redirect()->route('siswa.index')
-            ->with('success', 'Data siswa berhasil diimport.');
+            ->with('error', 'Terjadi kesalahan saat import: ' . $e->getMessage());
     }
+}
 
     public function exportTemplate(): Response
     {

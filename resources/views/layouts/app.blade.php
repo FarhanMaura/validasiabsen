@@ -88,6 +88,14 @@
         .input-primary {
             @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1FAE59] focus:border-transparent transition-colors duration-200;
         }
+
+        /* Responsive improvements */
+        @media (max-width: 640px) {
+            .container-mobile {
+                padding-left: 0.75rem;
+                padding-right: 0.75rem;
+            }
+        }
     </style>
 </head>
 <body class="font-sans antialiased bg-gray-50">

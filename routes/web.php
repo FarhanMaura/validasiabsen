@@ -47,8 +47,8 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/siswa/{siswa}', [SiswaController::class, 'destroy'])->name('siswa.destroy')->middleware('role:tu');
 
     // Import/Export Siswa (hanya TU)
-    Route::post('/siswa/import', [SiswaController::class, 'import'])->name('siswa.import')->middleware('role:tu');
-    Route::get('/siswa/export/template', [SiswaController::class, 'exportTemplate'])->name('siswa.export.template')->middleware('role:tu');
+    Route::post('/siswa/import', [SiswaController::class, 'import'])->name('siswa.import')->middleware(['auth', 'role:tu']);
+    Route::get('/siswa/export/template', [SiswaController::class, 'exportTemplate'])->name('siswa.export.template')->middleware(['auth', 'role:tu']);
 
     // Data Kelas - CRUD (hanya TU)
     Route::get('/kelas', [KelasController::class, 'index'])->name('kelas.index')->middleware('role:tu');
@@ -62,7 +62,7 @@ Route::middleware(['auth'])->group(function () {
     // Absensi
     Route::get('/absensi', [AbsensiController::class, 'index'])->name('absensi.index');
     Route::get('/absensi/rekap', [AbsensiController::class, 'rekap'])->name('absensi.rekap');
-    
+
     // Scan Barcode (Hanya Guru)
     Route::get('/absensi/scan', [AbsensiController::class, 'scan'])->name('absensi.scan')->middleware('role:guru');
 

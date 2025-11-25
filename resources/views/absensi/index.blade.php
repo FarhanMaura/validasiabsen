@@ -1,107 +1,107 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
             <div>
-                <h2 class="text-2xl font-bold text-gray-900">Data Absensi</h2>
-                <p class="text-sm text-gray-600 mt-1">Pantau kehadiran siswa secara real-time</p>
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-900">Data Absensi</h2>
+                <p class="text-xs sm:text-sm text-gray-600 mt-1">Pantau kehadiran siswa secara real-time</p>
             </div>
             @if(auth()->user()->role === 'tu')
             <a href="{{ route('absensi.export') }}?{{ http_build_query(request()->query()) }}"
-               class="bg-gradient-to-r from-[#1FAE59] to-green-500 hover:from-green-500 hover:to-green-600 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl flex items-center space-x-2">
-                <i class="fas fa-file-export text-sm"></i>
+               class="bg-green-500 hover:bg-green-600 text-white px-3 py-2 sm:px-4 sm:py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-colors duration-200 flex items-center justify-center sm:justify-start space-x-2">
+                <i class="fas fa-file-export text-xs sm:text-sm"></i>
                 <span>Export CSV</span>
             </a>
             @endif
         </div>
     </x-slot>
 
-    <div class="py-6">
-        <div class="mx-auto">
+    <div class="py-4 sm:py-6">
+        <div class="mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Stats Overview -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
                 <!-- Total Absensi -->
-                <div class="bg-gradient-to-r from-[#1FAE59] to-green-500 rounded-2xl shadow-lg p-6 text-white">
+                <div class="bg-[#1FAE59] rounded-xl shadow-lg p-3 sm:p-4 text-white">
                     <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-2xl font-bold">{{ $absensi->total() }}</p>
-                            <p class="text-green-100 text-sm">Total Absensi</p>
+                        <div class="flex-1">
+                            <p class="text-lg sm:text-xl font-bold">{{ $absensi->total() }}</p>
+                            <p class="text-green-100 text-xs sm:text-sm">Total Absensi</p>
                         </div>
-                        <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-                            <i class="fas fa-clipboard-list text-xl"></i>
+                        <div class="w-8 h-8 sm:w-10 sm:h-10 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0 ml-2">
+                            <i class="fas fa-clipboard-list text-sm sm:text-base"></i>
                         </div>
                     </div>
                 </div>
 
                 <!-- Hadir -->
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-3 sm:p-4">
                     <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-2xl font-bold text-green-600">
+                        <div class="flex-1">
+                            <p class="text-lg sm:text-xl font-bold text-green-600">
                                 {{ $absensi->where('status_masuk', 'hadir')->count() }}
                             </p>
-                            <p class="text-gray-600 text-sm">Hadir Tepat</p>
+                            <p class="text-gray-600 text-xs sm:text-sm">Hadir Tepat</p>
                         </div>
-                        <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                            <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                        <div class="w-8 h-8 sm:w-10 sm:h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-2">
+                            <i class="fas fa-check-circle text-green-600 text-sm sm:text-base"></i>
                         </div>
                     </div>
                 </div>
 
                 <!-- Terlambat -->
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-3 sm:p-4">
                     <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-2xl font-bold text-yellow-600">
+                        <div class="flex-1">
+                            <p class="text-lg sm:text-xl font-bold text-yellow-600">
                                 {{ $absensi->where('status_masuk', 'terlambat')->count() }}
                             </p>
-                            <p class="text-gray-600 text-sm">Terlambat</p>
+                            <p class="text-gray-600 text-xs sm:text-sm">Terlambat</p>
                         </div>
-                        <div class="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center">
-                            <i class="fas fa-clock text-yellow-600 text-xl"></i>
+                        <div class="w-8 h-8 sm:w-10 sm:h-10 bg-yellow-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-2">
+                            <i class="fas fa-clock text-yellow-600 text-sm sm:text-base"></i>
                         </div>
                     </div>
                 </div>
 
                 <!-- Tidak Hadir -->
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-3 sm:p-4">
                     <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-2xl font-bold text-red-600">
+                        <div class="flex-1">
+                            <p class="text-lg sm:text-xl font-bold text-red-600">
                                 {{ $absensi->where('status_masuk', 'tidak_hadir')->count() }}
                             </p>
-                            <p class="text-gray-600 text-sm">Tidak Hadir</p>
+                            <p class="text-gray-600 text-xs sm:text-sm">Tidak Hadir</p>
                         </div>
-                        <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
-                            <i class="fas fa-times-circle text-red-600 text-xl"></i>
+                        <div class="w-8 h-8 sm:w-10 sm:h-10 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-2">
+                            <i class="fas fa-times-circle text-red-600 text-sm sm:text-base"></i>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Quick Info -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-6">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
                     <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
-                            <i class="fas fa-calendar-day text-green-600"></i>
+                        <div class="w-8 h-8 sm:w-10 sm:h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-calendar-day text-green-600 text-sm"></i>
                         </div>
-                        <div>
-                            <p class="text-sm text-gray-600">Tanggal Dipilih</p>
-                            <p class="text-lg font-bold text-gray-900">
+                        <div class="min-w-0 flex-1">
+                            <p class="text-xs sm:text-sm text-gray-600">Tanggal Dipilih</p>
+                            <p class="text-base sm:text-lg font-bold text-gray-900 truncate">
                                 {{ request('tanggal', date('Y-m-d')) ? \Carbon\Carbon::parse(request('tanggal', date('Y-m-d')))->translatedFormat('d F Y') : 'Hari Ini' }}
                             </p>
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
                     <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
-                            <i class="fas fa-percentage text-blue-600"></i>
+                        <div class="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-percentage text-blue-600 text-sm"></i>
                         </div>
-                        <div>
-                            <p class="text-sm text-gray-600">Persentase Hadir</p>
-                            <p class="text-lg font-bold text-gray-900">
+                        <div class="min-w-0 flex-1">
+                            <p class="text-xs sm:text-sm text-gray-600">Persentase Hadir</p>
+                            <p class="text-base sm:text-lg font-bold text-gray-900">
                                 @php
                                     $total = $absensi->count();
                                     $hadir = $absensi->where('status_masuk', 'hadir')->count();
@@ -113,14 +113,14 @@
                     </div>
                 </div>
 
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
                     <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
-                            <i class="fas fa-chart-line text-purple-600"></i>
+                        <div class="w-8 h-8 sm:w-10 sm:h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-chart-line text-purple-600 text-sm"></i>
                         </div>
-                        <div>
-                            <p class="text-sm text-gray-600">Rata-rata Kehadiran</p>
-                            <p class="text-lg font-bold text-gray-900">
+                        <div class="min-w-0 flex-1">
+                            <p class="text-xs sm:text-sm text-gray-600">Rata-rata Kehadiran</p>
+                            <p class="text-base sm:text-lg font-bold text-gray-900">
                                 {{ $persentase }}% hari ini
                             </p>
                         </div>
@@ -129,37 +129,37 @@
             </div>
 
             <!-- Filter Section -->
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 mb-6">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
+                    <h3 class="text-base sm:text-lg font-semibold text-gray-900 flex items-center">
                         <i class="fas fa-filter text-green-500 mr-2"></i>
                         Filter Data
                     </h3>
-                    <span class="text-sm text-gray-600">{{ $absensi->total() }} data ditemukan</span>
+                    <span class="text-xs sm:text-sm text-gray-600">{{ $absensi->total() }} data ditemukan</span>
                 </div>
 
-                <form action="{{ route('absensi.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <form action="{{ route('absensi.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                     <!-- Tanggal -->
                     <div>
-                        <label for="tanggal" class="block text-sm font-medium text-gray-700 mb-2">Tanggal</label>
+                        <label for="tanggal" class="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Tanggal</label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i class="fas fa-calendar text-gray-400"></i>
+                                <i class="fas fa-calendar text-gray-400 text-sm"></i>
                             </div>
                             <input type="date" name="tanggal" id="tanggal" value="{{ request('tanggal', date('Y-m-d')) }}"
-                                   class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#1FAE59] focus:border-[#1FAE59] transition-colors duration-200">
+                                   class="block w-full pl-10 pr-3 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1FAE59] focus:border-[#1FAE59] transition-colors duration-200 text-sm">
                         </div>
                     </div>
 
                     <!-- Kelas -->
                     <div>
-                        <label for="kelas_id" class="block text-sm font-medium text-gray-700 mb-2">Kelas</label>
+                        <label for="kelas_id" class="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Kelas</label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i class="fas fa-door-open text-gray-400"></i>
+                                <i class="fas fa-door-open text-gray-400 text-sm"></i>
                             </div>
                             <select name="kelas_id" id="kelas_id"
-                                    class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#1FAE59] focus:border-[#1FAE59] transition-colors duration-200">
+                                    class="block w-full pl-10 pr-3 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1FAE59] focus:border-[#1FAE59] transition-colors duration-200 text-sm">
                                 <option value="">Semua Kelas</option>
                                 @foreach($kelas as $item)
                                     <option value="{{ $item->id }}" {{ request('kelas_id') == $item->id ? 'selected' : '' }}>
@@ -172,13 +172,13 @@
 
                     <!-- Status -->
                     <div>
-                        <label for="status_masuk" class="block text-sm font-medium text-gray-700 mb-2">Status Masuk</label>
+                        <label for="status_masuk" class="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Status Masuk</label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i class="fas fa-sign-in-alt text-gray-400"></i>
+                                <i class="fas fa-sign-in-alt text-gray-400 text-sm"></i>
                             </div>
                             <select name="status_masuk" id="status_masuk"
-                                    class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#1FAE59] focus:border-[#1FAE59] transition-colors duration-200">
+                                    class="block w-full pl-10 pr-3 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1FAE59] focus:border-[#1FAE59] transition-colors duration-200 text-sm">
                                 <option value="">Semua Status</option>
                                 <option value="hadir" {{ request('status_masuk') == 'hadir' ? 'selected' : '' }}>Hadir</option>
                                 <option value="terlambat" {{ request('status_masuk') == 'terlambat' ? 'selected' : '' }}>Terlambat</option>
@@ -193,149 +193,243 @@
                     <!-- Filter Button -->
                     <div class="flex items-end">
                         <button type="submit"
-                                class="bg-gradient-to-r from-[#1FAE59] to-green-500 hover:from-green-500 hover:to-green-600 text-white px-6 py-3 rounded-xl text-sm font-medium transition-all duration-200 transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl w-full flex items-center justify-center space-x-2">
-                            <i class="fas fa-search"></i>
+                                class="bg-[#1FAE59] hover:bg-green-600 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg text-sm font-medium transition-colors duration-200 w-full flex items-center justify-center space-x-2">
+                            <i class="fas fa-search text-xs sm:text-sm"></i>
                             <span>Terapkan Filter</span>
                         </button>
                     </div>
                 </form>
             </div>
 
-            <!-- Table Section -->
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <!-- Table Header -->
-                <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-                    <div class="flex items-center justify-between">
-                        <h3 class="text-lg font-semibold text-gray-900">Rekap Absensi</h3>
-                        <div class="text-sm text-gray-600">
-                            Menampilkan {{ $absensi->firstItem() ?? 0 }}-{{ $absensi->lastItem() ?? 0 }} dari {{ $absensi->total() }} data
+            <!-- Mobile Card View -->
+            <div class="block md:hidden">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-base font-semibold text-gray-900">Rekap Absensi</h3>
+                            <div class="text-xs text-gray-600">
+                                {{ $absensi->total() }} data
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Table -->
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                    <div class="flex items-center space-x-1">
-                                        <span>Tanggal</span>
-                                        <i class="fas fa-sort text-gray-400 text-xs"></i>
+                    <div class="divide-y divide-gray-200">
+                        @forelse($absensi as $item)
+                        <div class="p-4 hover:bg-gray-50 transition-colors duration-150">
+                            <div class="flex items-start justify-between mb-3">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+                                        <span class="text-xs font-bold text-white">{{ strtoupper(substr($item->siswa->nama, 0, 1)) }}</span>
                                     </div>
-                                </th>
-                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                    <div class="flex items-center space-x-1">
-                                        <span>Nama Siswa</span>
-                                        <i class="fas fa-sort text-gray-400 text-xs"></i>
+                                    <div class="min-w-0 flex-1">
+                                        <h4 class="text-sm font-semibold text-gray-900 truncate">{{ $item->siswa->nama }}</h4>
+                                        <p class="text-xs text-gray-500">NISN: {{ $item->siswa->nisn }}</p>
                                     </div>
-                                </th>
-                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Kelas</th>
-                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Waktu Masuk</th>
-                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status Masuk</th>
-                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Waktu Pulang</th>
-                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status Pulang</th>
-                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            @forelse($absensi as $item)
-                            <tr class="hover:bg-gray-50 transition-colors duration-150">
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-medium text-gray-900">
-                                        {{ $item->tanggal->format('d/m/Y') }}
-                                    </div>
-                                    <div class="text-xs text-gray-500">
-                                        {{ $item->tanggal->translatedFormat('l') }}
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center">
-                                        <div class="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center mr-3">
-                                            <span class="text-xs font-bold text-white">{{ strtoupper(substr($item->siswa->nama, 0, 1)) }}</span>
-                                        </div>
-                                        <div>
-                                            <div class="text-sm font-medium text-gray-900">{{ $item->siswa->nama }}</div>
-                                            <div class="text-xs text-gray-500">{{ $item->siswa->nisn }}</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                        <i class="fas fa-door-open mr-1"></i>
-                                        {{ $item->siswa->kelas->nama_lengkap }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900">
+                                </div>
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-{{ $item->status_masuk_color }}-100 text-{{ $item->status_masuk_color }}-800">
+                                    <i class="fas fa-{{ $item->status_masuk_icon }} mr-1 text-xs"></i>
+                                    {{ ucfirst($item->status_masuk) }}
+                                </span>
+                            </div>
+
+                            <div class="space-y-2 text-sm">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-600">Tanggal</span>
+                                    <span class="font-medium text-gray-900">{{ $item->tanggal->format('d/m/Y') }}</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-600">Kelas</span>
+                                    <span class="font-medium text-gray-900">{{ $item->siswa->kelas->nama_lengkap }}</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-600">Masuk</span>
+                                    <span class="font-medium text-gray-900">
                                         {{ $item->waktu_masuk ? \Carbon\Carbon::parse($item->waktu_masuk)->format('H:i') : '-' }}
-                                    </div>
-                                    @if($item->waktu_masuk)
-                                    <div class="text-xs text-gray-500">
-                                        {{ \Carbon\Carbon::parse($item->waktu_masuk)->format('d/m') }}
-                                    </div>
-                                    @endif
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-{{ $item->status_masuk_color }}-100 text-{{ $item->status_masuk_color }}-800">
-                                        <i class="fas fa-{{ $item->status_masuk_icon }} mr-1 text-xs"></i>
-                                        {{ ucfirst($item->status_masuk) }}
                                     </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900">
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-600">Pulang</span>
+                                    <span class="font-medium text-gray-900">
                                         {{ $item->waktu_pulang ? \Carbon\Carbon::parse($item->waktu_pulang)->format('H:i') : '-' }}
-                                    </div>
-                                    @if($item->waktu_pulang)
-                                    <div class="text-xs text-gray-500">
-                                        {{ \Carbon\Carbon::parse($item->waktu_pulang)->format('d/m') }}
-                                    </div>
-                                    @endif
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-{{ $item->status_pulang_color }}-100 text-{{ $item->status_pulang_color }}-800">
-                                        <i class="fas fa-{{ $item->status_pulang_icon }} mr-1 text-xs"></i>
+                                    </span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-600">Status Pulang</span>
+                                    <span class="font-medium text-gray-900">
                                         {{ ucfirst(str_replace('_', ' ', $item->status_pulang)) }}
                                     </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <form action="{{ route('absensi.destroy', $item) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data absensi ini?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="text-red-600 hover:text-red-900 transition-colors duration-200">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="8" class="px-6 py-12 text-center">
-                                    <div class="text-gray-400 mb-3">
-                                        <i class="fas fa-clipboard-list text-4xl"></i>
-                                    </div>
-                                    <p class="text-gray-500 text-lg font-medium">Tidak ada data absensi</p>
-                                    <p class="text-gray-400 text-sm mt-1">Coba ubah filter atau tanggal untuk melihat data</p>
-                                </td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
+                                </div>
+                            </div>
 
-                <!-- Pagination -->
-                @if($absensi->hasPages())
-                <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
-                    <div class="flex items-center justify-between">
-                        <div class="text-sm text-gray-700">
-                            Menampilkan {{ $absensi->firstItem() }} hingga {{ $absensi->lastItem() }} dari {{ $absensi->total() }} hasil
+                            <div class="flex justify-end items-center mt-3 pt-3 border-t border-gray-200">
+                                <form action="{{ route('absensi.destroy', $item) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data absensi ini?');" class="w-full">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="text-red-600 hover:text-red-800 transition-colors duration-200 flex items-center justify-center w-full py-2 rounded-lg hover:bg-red-50 text-sm font-medium">
+                                        <i class="fas fa-trash mr-2"></i>
+                                        Hapus Data
+                                    </button>
+                                </form>
+                            </div>
                         </div>
-                        <div class="flex space-x-2">
-                            {{ $absensi->links() }}
+                        @empty
+                        <div class="p-8 text-center">
+                            <div class="text-gray-400 mb-3">
+                                <i class="fas fa-clipboard-list text-3xl"></i>
+                            </div>
+                            <p class="text-gray-500 text-base font-medium">Tidak ada data absensi</p>
+                            <p class="text-gray-400 text-xs mt-1">Coba ubah filter atau tanggal untuk melihat data</p>
+                        </div>
+                        @endforelse
+                    </div>
+
+                    <!-- Pagination Mobile -->
+                    @if($absensi->hasPages())
+                    <div class="px-4 py-3 border-t border-gray-200 bg-gray-50">
+                        <div class="flex flex-col items-center gap-2">
+                            <div class="text-xs text-gray-700">
+                                Menampilkan {{ $absensi->firstItem() }}-{{ $absensi->lastItem() }} dari {{ $absensi->total() }}
+                            </div>
+                            <div class="flex justify-center">
+                                {{ $absensi->links() }}
+                            </div>
                         </div>
                     </div>
+                    @endif
                 </div>
-                @endif
+            </div>
+
+            <!-- Desktop Table View -->
+            <div class="hidden md:block">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <!-- Table Header -->
+                    <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg font-semibold text-gray-900">Rekap Absensi</h3>
+                            <div class="text-sm text-gray-600">
+                                Menampilkan {{ $absensi->firstItem() ?? 0 }}-{{ $absensi->lastItem() ?? 0 }} dari {{ $absensi->total() }} data
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Table -->
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">
+                                        Tanggal
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">
+                                        Nama Siswa
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">Kelas</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">Waktu Masuk</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">Status Masuk</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">Waktu Pulang</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">Status Pulang</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @forelse($absensi as $item)
+                                <tr class="hover:bg-gray-50 transition-colors duration-150">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">
+                                            {{ $item->tanggal->format('d/m/Y') }}
+                                        </div>
+                                        <div class="text-xs text-gray-500">
+                                            {{ $item->tanggal->translatedFormat('l') }}
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center mr-3">
+                                                <span class="text-xs font-bold text-white">{{ strtoupper(substr($item->siswa->nama, 0, 1)) }}</span>
+                                            </div>
+                                            <div>
+                                                <div class="text-sm font-medium text-gray-900">{{ $item->siswa->nama }}</div>
+                                                <div class="text-xs text-gray-500">{{ $item->siswa->nisn }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            <i class="fas fa-door-open mr-1"></i>
+                                            {{ $item->siswa->kelas->nama_lengkap }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">
+                                            {{ $item->waktu_masuk ? \Carbon\Carbon::parse($item->waktu_masuk)->format('H:i') : '-' }}
+                                        </div>
+                                        @if($item->waktu_masuk)
+                                        <div class="text-xs text-gray-500">
+                                            {{ \Carbon\Carbon::parse($item->waktu_masuk)->format('d/m') }}
+                                        </div>
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-{{ $item->status_masuk_color }}-100 text-{{ $item->status_masuk_color }}-800">
+                                            <i class="fas fa-{{ $item->status_masuk_icon }} mr-1 text-xs"></i>
+                                            {{ ucfirst($item->status_masuk) }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">
+                                            {{ $item->waktu_pulang ? \Carbon\Carbon::parse($item->waktu_pulang)->format('H:i') : '-' }}
+                                        </div>
+                                        @if($item->waktu_pulang)
+                                        <div class="text-xs text-gray-500">
+                                            {{ \Carbon\Carbon::parse($item->waktu_pulang)->format('d/m') }}
+                                        </div>
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-{{ $item->status_pulang_color }}-100 text-{{ $item->status_pulang_color }}-800">
+                                            <i class="fas fa-{{ $item->status_pulang_icon }} mr-1 text-xs"></i>
+                                            {{ ucfirst(str_replace('_', ' ', $item->status_pulang)) }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <form action="{{ route('absensi.destroy', $item) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data absensi ini?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-red-600 hover:text-red-900 transition-colors duration-200 p-2 rounded-lg hover:bg-red-50">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="8" class="px-6 py-12 text-center">
+                                        <div class="text-gray-400 mb-3">
+                                            <i class="fas fa-clipboard-list text-4xl"></i>
+                                        </div>
+                                        <p class="text-gray-500 text-lg font-medium">Tidak ada data absensi</p>
+                                        <p class="text-gray-400 text-sm mt-1">Coba ubah filter atau tanggal untuk melihat data</p>
+                                    </td>
+                                </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination Desktop -->
+                    @if($absensi->hasPages())
+                    <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+                        <div class="flex items-center justify-between">
+                            <div class="text-sm text-gray-700">
+                                Menampilkan {{ $absensi->firstItem() }} hingga {{ $absensi->lastItem() }} dari {{ $absensi->total() }} hasil
+                            </div>
+                            <div class="flex space-x-2">
+                                {{ $absensi->links() }}
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+                </div>
             </div>
         </div>
     </div>
@@ -346,18 +440,22 @@
             list-style: none;
             padding: 0;
             margin: 0;
+            flex-wrap: wrap;
+            justify-content: center;
             gap: 4px;
         }
 
         .pagination li a,
         .pagination li span {
             display: inline-block;
-            padding: 8px 12px;
-            border-radius: 8px;
+            padding: 6px 10px;
+            border-radius: 6px;
             text-decoration: none;
-            font-size: 14px;
+            font-size: 12px;
             font-weight: 500;
             transition: all 0.2s ease;
+            min-width: 36px;
+            text-align: center;
         }
 
         .pagination li a {
@@ -383,30 +481,13 @@
             border-color: #1FAE59;
         }
 
-        .attendance-row {
-            transition: all 0.3s ease;
-        }
-
-        .attendance-row:hover {
-            transform: translateX(4px);
+        @media (max-width: 640px) {
+            .pagination li a,
+            .pagination li span {
+                padding: 4px 8px;
+                font-size: 11px;
+                min-width: 32px;
+            }
         }
     </style>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Removed auto-filter to prevent logout issue
-            // Users must click "Terapkan Filter" button manually
-            
-            // Add hover effects to table rows
-            const tableRows = document.querySelectorAll('tbody tr');
-            tableRows.forEach(row => {
-                row.addEventListener('mouseenter', function() {
-                    this.style.transform = 'translateX(4px)';
-                });
-                row.addEventListener('mouseleave', function() {
-                    this.style.transform = 'translateX(0)';
-                });
-            });
-        });
-    </script>
 </x-app-layout>
