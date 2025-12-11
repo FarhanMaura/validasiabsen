@@ -120,6 +120,15 @@ class SiswaImport implements ToModel, WithHeadingRow
         $kelasName = trim($kelasName);
         \Log::info('🔍 SEARCHING KELAS: ' . $kelasName);
 
+        // Coba cari by ID jika numeric
+        if (is_numeric($kelasName)) {
+            $kelas = Kelas::find($kelasName);
+            if ($kelas) {
+                \Log::info('✅ FOUND BY ID: ' . $kelas->id);
+                return $kelas;
+            }
+        }
+
         // Coba exact match di nama_kelas
         $kelas = Kelas::where('nama_kelas', $kelasName)->first();
         if ($kelas) {
