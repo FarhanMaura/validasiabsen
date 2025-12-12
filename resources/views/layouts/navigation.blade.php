@@ -47,6 +47,10 @@
                 </a>
                 @endif
             @endif
+
+            <a href="{{ route('rfid.checker') }}" class="flex items-center px-3 py-2 rounded-md text-gray-900 hover:bg-green-50 hover:text-[#1FAE59] transition-colors {{ request()->routeIs('rfid.checker') ? 'bg-green-50 text-[#1FAE59] font-medium' : '' }}">
+                <i class="fas fa-id-card w-5 mr-3 text-center"></i>RFID Checker
+            </a>
         </div>
 
         <div class="border-t border-gray-200 px-2 py-3">
@@ -125,6 +129,10 @@
                 </a>
                 @endif
             @endif
+
+            <a href="{{ route('rfid.checker') }}" class="flex items-center px-3 py-3 rounded-lg hover:bg-green-600 transition-all duration-200 {{ request()->routeIs('rfid.checker') ? 'bg-green-600 shadow-md' : '' }}">
+                <i class="fas fa-id-card w-5 mr-3 text-center"></i>RFID Checker
+            </a>
         </nav>
 
         <div class="p-4 border-t border-green-600 space-y-1">

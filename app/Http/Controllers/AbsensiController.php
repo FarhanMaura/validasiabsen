@@ -146,7 +146,8 @@ class AbsensiController extends Controller
             Log::warning('RFID Absen: RFID UID tidak terdaftar atau siswa tidak aktif.', ['rfid_uid' => $rfidUid]);
             return response()->json([
                 'status' => 'error',
-                'message' => 'RFID UID tidak terdaftar atau siswa tidak aktif.'
+                'message' => 'RFID UID tidak terdaftar atau siswa tidak aktif.',
+                'rfid_uid' => $rfidUid
             ], 404);
         }
 
@@ -279,6 +280,11 @@ class AbsensiController extends Controller
     public function scan(): View
     {
         return view('absensi.scan');
+    }
+
+    public function rfidChecker(): View
+    {
+        return view('rfid.checker');
     }
 
     public function checkBarcode(Request $request)
