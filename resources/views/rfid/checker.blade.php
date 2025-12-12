@@ -354,9 +354,35 @@
         }
 
         async function checkForRFID() {
-            // This is a placeholder - in real implementation, this would check
-            // for new RFID scans from the Arduino
-            // For now, we'll just listen for manual trigger or actual RFID events
+            try {
+                const response = await fetch('{{ route("api.rfid.latest") }}', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    },
+                    credentials: 'same-origin'
+                });
+
+                if (!response.ok) {
+                    console.error('Failed to fetch RFID scans:', response.statusText);
+                    return;
+                }
+
+                const data = await response.json();
+                
+                if (data.status === 'success' && data.scans && data.scans.length > 0) {
+                    // Get the most recent scan
+                    const latestScan = data.scans[0];
+                    
+                    // Only display if it's a new scan (different from last displayed)
+                    if (latestScan.rfid_uid !== lastRfidUid) {
+                        displayRFID(latestScan);
+                    }
+                }
+            } catch (error) {
+                console.error('Error polling RFID scans:', error);
+            }
         }
 
         // Listen for RFID scan events (triggered by Arduino POST to API)

@@ -6,6 +6,7 @@ use App\Models\Absensi;
 use App\Models\Siswa;
 use App\Models\Kelas;
 use App\Models\Pengaturan;
+use App\Models\RfidScan;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\Response;
@@ -143,6 +144,14 @@ class AbsensiController extends Controller
                       ->first();
 
         if (!$siswa) {
+            // Log RFID scan for unregistered cards
+            RfidScan::create([
+                'rfid_uid' => $rfidUid,
+                'siswa_id' => null,
+                'status' => 'unregistered',
+                'scanned_at' => $currentTime,
+            ]);
+
             Log::warning('RFID Absen: RFID UID tidak terdaftar atau siswa tidak aktif.', ['rfid_uid' => $rfidUid]);
             return response()->json([
                 'status' => 'error',
@@ -180,6 +189,14 @@ class AbsensiController extends Controller
                     'keterangan'  => ($statusMasuk === 'terlambat') ? 'Terlambat masuk' : null,
                 ]);
 
+                // Log RFID scan for registered cards
+                RfidScan::create([
+                    'rfid_uid' => $rfidUid,
+                    'siswa_id' => $siswa->id,
+                    'status' => 'registered',
+                    'scanned_at' => $currentTime,
+                ]);
+
                 // Set cache to prevent double-tap
                 cache()->put("rfid_scan_{$siswa->id}", $currentTime, now()->addSeconds(3));
 
@@ -213,6 +230,14 @@ class AbsensiController extends Controller
                     $absensi->waktu_pulang = $currentTime->toTimeString();
                     $absensi->status_pulang = $statusPulang;
                     $absensi->save();
+
+                    // Log RFID scan for check-out
+                    RfidScan::create([
+                        'rfid_uid' => $rfidUid,
+                        'siswa_id' => $siswa->id,
+                        'status' => 'registered',
+                        'scanned_at' => $currentTime,
+                    ]);
 
                     // Set cache to prevent double-tap
                     cache()->put("rfid_scan_{$siswa->id}", $currentTime, now()->addSeconds(3));
@@ -285,6 +310,47 @@ class AbsensiController extends Controller
     public function rfidChecker(): View
     {
         return view('rfid.checker');
+    }
+
+    /**
+     * Get latest RFID scans for polling
+     */
+    public function getLatestRfidScans(Request $request)
+    {
+        // Clean old records first
+        RfidScan::cleanOldRecords();
+
+        // Get scans from last 5 minutes, limited to 10 most recent
+        $scans = RfidScan::with('siswa.kelas')
+            ->recent(5)
+            ->orderBy('scanned_at', 'desc')
+            ->limit(10)
+            ->get();
+
+        $formattedScans = $scans->map(function ($scan) {
+            $data = [
+                'rfid_uid' => $scan->rfid_uid,
+                'scanned_at' => $scan->scanned_at->format('Y-m-d H:i:s'),
+                'status' => $scan->status === 'registered' ? 'success' : 'error',
+            ];
+
+            if ($scan->siswa) {
+                $data['data'] = [
+                    'nama' => $scan->siswa->nama,
+                    'kelas' => $scan->siswa->kelas->nama_lengkap ?? '-',
+                    'status_masuk' => 'Terdaftar',
+                ];
+            } else {
+                $data['message'] = 'RFID UID tidak terdaftar';
+            }
+
+            return $data;
+        });
+
+        return response()->json([
+            'status' => 'success',
+            'scans' => $formattedScans,
+        ]);
     }
 
     public function checkBarcode(Request $request)

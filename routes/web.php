@@ -99,6 +99,11 @@ Route::get('/rfid/checker', [AbsensiController::class, 'rfidChecker'])
     ->name('rfid.checker')
     ->middleware('auth');
 
+// RFID Polling endpoint for real-time updates
+Route::get('/api/rfid/latest', [AbsensiController::class, 'getLatestRfidScans'])
+    ->name('api.rfid.latest')
+    ->middleware('auth');
+
 // Debug route for RFID testing
 Route::get('/debug/rfid', function () {
     return view('debug.rfid');
