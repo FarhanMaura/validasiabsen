@@ -11,6 +11,7 @@ class RfidScan extends Model
         'siswa_id',
         'status',
         'scanned_at',
+        'ip_address',
     ];
 
     protected $casts = [

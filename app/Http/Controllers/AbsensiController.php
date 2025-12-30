@@ -150,6 +150,7 @@ class AbsensiController extends Controller
                 'siswa_id' => null,
                 'status' => 'unregistered',
                 'scanned_at' => $currentTime,
+                'ip_address' => $request->ip(),
             ]);
 
             Log::warning('RFID Absen: RFID UID tidak terdaftar atau siswa tidak aktif.', ['rfid_uid' => $rfidUid]);
@@ -195,6 +196,7 @@ class AbsensiController extends Controller
                     'siswa_id' => $siswa->id,
                     'status' => 'registered',
                     'scanned_at' => $currentTime,
+                    'ip_address' => $request->ip(),
                 ]);
 
                 // Set cache to prevent double-tap
@@ -237,6 +239,7 @@ class AbsensiController extends Controller
                         'siswa_id' => $siswa->id,
                         'status' => 'registered',
                         'scanned_at' => $currentTime,
+                        'ip_address' => $request->ip(),
                     ]);
 
                     // Set cache to prevent double-tap
@@ -309,7 +312,9 @@ class AbsensiController extends Controller
 
     public function rfidChecker(): View
     {
-        return view('rfid.checker');
+        $kelas = Kelas::all();
+        $siswas = Siswa::where('status_aktif', true)->select('id', 'nama', 'kelas_id', 'nisn')->get();
+        return view('rfid.checker', compact('kelas', 'siswas'));
     }
 
     /**
@@ -321,11 +326,23 @@ class AbsensiController extends Controller
         RfidScan::cleanOldRecords();
 
         // Get scans from last 5 minutes, limited to 10 most recent
-        $scans = RfidScan::with('siswa.kelas')
+        $query = RfidScan::with('siswa.kelas')
             ->recent(5)
-            ->orderBy('scanned_at', 'desc')
-            ->limit(10)
-            ->get();
+            ->orderBy('scanned_at', 'desc');
+
+        // Apply Device IP Filter
+        if ($request->has('device_ip') && $request->device_ip) {
+            $query->where('ip_address', $request->device_ip);
+        }
+
+        $scans = $query->limit(10)->get();
+        
+        // Get active devices (IPs) from last 1 hour
+        $activeDevices = RfidScan::select('ip_address')
+            ->whereNotNull('ip_address')
+            ->where('scanned_at', '>=', now()->subHour())
+            ->distinct()
+            ->pluck('ip_address');
 
         $formattedScans = $scans->map(function ($scan) {
             $data = [
@@ -350,6 +367,40 @@ class AbsensiController extends Controller
         return response()->json([
             'status' => 'success',
             'scans' => $formattedScans,
+            'active_devices' => $activeDevices,
+        ]);
+    }
+
+    public function linkRfid(Request $request)
+    {
+        $request->validate([
+            'siswa_id' => 'required|exists:siswas,id',
+            'rfid_uid' => 'required|string|max:50',
+        ]);
+
+        $siswa = Siswa::find($request->siswa_id);
+        
+        // Check if UID is already used by another student
+        $existingStudent = Siswa::where('rfid_uid', $request->rfid_uid)->where('id', '!=', $siswa->id)->first();
+        if ($existingStudent) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Kartu ini sudah terdaftar untuk siswa lain: ' . $existingStudent->nama,
+            ], 400);
+        }
+
+        $siswa->rfid_uid = $request->rfid_uid;
+        $siswa->save();
+
+        // Update recent scans to reflect registration
+        RfidScan::where('rfid_uid', $request->rfid_uid)
+                ->where('created_at', '>=', now()->subMinutes(10))
+                ->update(['siswa_id' => $siswa->id, 'status' => 'registered']);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Kartu berhasil didaftarkan untuk ' . $siswa->nama,
+            'student' => $siswa
         ]);
     }
 

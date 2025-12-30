@@ -7,6 +7,8 @@
     <title>RFID Checker - Validasi Absen</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+
+        /* Previous CSS content remains, adding new styles */
         * {
             margin: 0;
             padding: 0;
@@ -28,7 +30,7 @@
             backdrop-filter: blur(10px);
             border-radius: 24px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            max-width: 600px;
+            max-width: 800px; /* Widened for filters */
             width: 100%;
             padding: 40px;
             position: relative;
@@ -47,7 +49,7 @@
 
         .header {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
         }
 
         .header h1 {
@@ -60,6 +62,42 @@
         .header p {
             color: #6b7280;
             font-size: 14px;
+        }
+
+        /* Filter Section Styles */
+        .filters {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 30px;
+            background: #f3f4f6;
+            padding: 16px;
+            border-radius: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #4b5563;
+            margin-bottom: 6px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #1f2937;
+            background: white;
+            transition: all 0.2s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
         }
 
         .rfid-display {
@@ -282,21 +320,16 @@
             color: #10b981;
         }
 
+        /* Responsive */
         @media (max-width: 640px) {
             .container {
                 padding: 24px;
             }
-
+            .filters {
+                grid-template-columns: 1fr;
+            }
             .header h1 {
                 font-size: 24px;
-            }
-
-            .rfid-uid {
-                font-size: 20px;
-            }
-
-            .action-buttons {
-                flex-direction: column;
             }
         }
     </style>
@@ -309,7 +342,34 @@
 
         <div class="header">
             <h1>🔍 RFID Checker</h1>
-            <p>Tap kartu RFID untuk melihat nomor UID</p>
+            <p>Pilih alat dan kelas, lalu tap kartu untuk validasi</p>
+        </div>
+
+        <div class="filters">
+            <div class="form-group">
+                <label for="deviceSelect">📡 Alat / Device</label>
+                <select id="deviceSelect" class="form-control">
+                    <option value="">Semua Alat</option>
+                    @if(request('device_ip'))
+                        <option value="{{ request('device_ip') }}" selected>{{ request('device_ip') }} (Tersimpan)</option>
+                    @endif
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="classSelect">🏫 Kelas</label>
+                <select id="classSelect" class="form-control">
+                    <option value="">Semua Kelas</option>
+                    @foreach($kelas as $k)
+                        <option value="{{ $k->id }}">{{ $k->nama_lengkap }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="studentSelect">👤 Siswa (Opsional)</label>
+                <select id="studentSelect" class="form-control" disabled>
+                    <option value="">-- Pilih Kelas Dahulu --</option>
+                </select>
+            </div>
         </div>
 
         <div class="rfid-display waiting" id="rfidDisplay">
@@ -320,7 +380,15 @@
             <div class="student-info" id="studentInfo" style="display: none;"></div>
         </div>
 
+        <!-- Hidden Alert for Student Match -->
+        <div id="studentMatchAlert" style="display:none; background-color: #d1fae5; border: 1px solid #10b981; color: #065f46; padding: 12px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
+            <strong id="matchText"></strong>
+        </div>
+
         <div class="action-buttons">
+            <button class="btn btn-primary" id="linkBtn" style="display: none; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+                🔗 Daftarkan Kartu
+            </button>
             <button class="btn btn-primary" id="copyBtn" style="display: none;">
                 📋 Copy UID
             </button>
@@ -330,7 +398,7 @@
         </div>
 
         <div class="history">
-            <h3>📜 Riwayat Scan</h3>
+            <h3>📜 Riwayat Scan (Live)</h3>
             <div class="history-list" id="historyList">
                 <p style="text-align: center; color: #9ca3af; padding: 20px;">Belum ada riwayat scan</p>
             </div>
@@ -341,11 +409,46 @@
         let pollingInterval;
         let lastRfidUid = null;
         let history = JSON.parse(localStorage.getItem('rfidHistory') || '[]');
+        
+        // Pass data from Backend
+        const styles = @json($kelas);
+        const allStudents = @json($siswas);
 
-        // Start polling when page loads
+        // Elements
+        const deviceSelect = document.getElementById('deviceSelect');
+        const classSelect = document.getElementById('classSelect');
+        const studentSelect = document.getElementById('studentSelect');
+        const copyBtn = document.getElementById('copyBtn');
+        const linkBtn = document.getElementById('linkBtn');
+
+        // Initial Setup
         window.addEventListener('load', () => {
-            startPolling();
             renderHistory();
+            startPolling();
+        });
+
+        // Event Listeners for Filters
+        classSelect.addEventListener('change', () => {
+            const classId = classSelect.value;
+            studentSelect.innerHTML = '<option value="">-- Pilih Siswa --</option>';
+            
+            if (classId) {
+                studentSelect.disabled = false;
+                const filteredStudents = allStudents.filter(s => s.kelas_id == classId);
+                
+                // Sort by name
+                filteredStudents.sort((a, b) => a.nama.localeCompare(b.nama));
+                
+                filteredStudents.forEach(student => {
+                    const option = document.createElement('option');
+                    option.value = student.id;
+                    option.textContent = student.nama;
+                    studentSelect.appendChild(option);
+                });
+            } else {
+                studentSelect.disabled = true;
+                studentSelect.innerHTML = '<option value="">-- Pilih Kelas Dahulu --</option>';
+            }
         });
 
         function startPolling() {
@@ -355,7 +458,14 @@
 
         async function checkForRFID() {
             try {
-                const response = await fetch('{{ route("api.rfid.latest") }}', {
+                // Determine Query Params
+                let url = '{{ route("api.rfid.latest") }}';
+                const selectedDevice = deviceSelect.value;
+                if (selectedDevice) {
+                    url += `?device_ip=${selectedDevice}`;
+                }
+
+                const response = await fetch(url, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -364,32 +474,51 @@
                     credentials: 'same-origin'
                 });
 
-                if (!response.ok) {
-                    console.error('Failed to fetch RFID scans:', response.statusText);
-                    return;
-                }
+                if (!response.ok) return;
 
                 const data = await response.json();
                 
+                // Update Device Dropdown (Active Devices)
+                if (data.active_devices) {
+                    updateDeviceOptions(data.active_devices);
+                }
+
                 if (data.status === 'success' && data.scans && data.scans.length > 0) {
                     // Get the most recent scan
                     const latestScan = data.scans[0];
                     
-                    // Only display if it's a new scan (different from last displayed)
+                    // Display if different from last
                     if (latestScan.rfid_uid !== lastRfidUid) {
                         displayRFID(latestScan);
                     }
                 }
             } catch (error) {
-                console.error('Error polling RFID scans:', error);
+                console.error('Error polling:', error);
             }
         }
 
-        // Listen for RFID scan events (triggered by Arduino POST to API)
-        // We can simulate this by creating a global event listener
-        window.addEventListener('rfidScanned', (event) => {
-            displayRFID(event.detail);
-        });
+        function updateDeviceOptions(activeIps) {
+            const currentVal = deviceSelect.value;
+            // Only update if options changed count to avoid flickering (simplified)
+            // Ideally we check content.
+            
+            // Keep "All" and "Current"
+            const uniqueIps = new Set(activeIps);
+            if(currentVal) uniqueIps.add(currentVal);
+
+            // Rebuild options if size differs or just once? 
+            // To prevent UI glitching, we check if the list includes new IPs.
+            
+            // Simplified: Just add missing IPs
+            Array.from(uniqueIps).forEach(ip => {
+                if (!deviceSelect.querySelector(`option[value="${ip}"]`)) {
+                    const option = document.createElement('option');
+                    option.value = ip;
+                    option.textContent = `Alat (${ip})`;
+                    deviceSelect.appendChild(option);
+                }
+            });
+        }
 
         function displayRFID(data) {
             const display = document.getElementById('rfidDisplay');
@@ -397,27 +526,35 @@
             const uid = document.getElementById('rfidUid');
             const status = document.getElementById('rfidStatus');
             const studentInfo = document.getElementById('studentInfo');
-            const copyBtn = document.getElementById('copyBtn');
+            const matchAlert = document.getElementById('studentMatchAlert');
 
-            // Prevent duplicate displays
+            // Rate Limit Display
             if (data.rfid_uid === lastRfidUid && Date.now() - (window.lastScanTime || 0) < 3000) {
                 return;
             }
             lastRfidUid = data.rfid_uid;
             window.lastScanTime = Date.now();
 
-            // Update display
+            // Setup Details
             display.className = 'rfid-display';
             uid.textContent = data.rfid_uid;
-            copyBtn.style.display = 'flex';
+            matchAlert.style.display = 'none';
+
+            // Reset Buttons
+            copyBtn.style.display = 'none';
+            linkBtn.style.display = 'none';
 
             if (data.status === 'success') {
-                // Registered student
+                // Registered
                 display.classList.add('success');
                 icon.textContent = '✅';
                 status.textContent = 'Kartu Terdaftar';
-
-                // Show student info
+                
+                // Logic: Check if matches selected student (if any)
+                const selectedStudentId = studentSelect.value;
+                // Note: data.data.nama is returned. We don't have ID in common response.
+                // But we can match Name if we trust unique names, or just show info.
+                
                 studentInfo.style.display = 'block';
                 studentInfo.innerHTML = `
                     <h3>📚 Informasi Siswa</h3>
@@ -429,46 +566,132 @@
                         <span class="info-label">Kelas:</span>
                         <span class="info-value">${data.data.kelas}</span>
                     </div>
-                    <div class="info-row">
-                        <span class="info-label">Status:</span>
-                        <span class="info-value">${data.data.status_masuk || data.action}</span>
-                    </div>
                 `;
 
                 addToHistory(data.rfid_uid, data.data.nama, true);
             } else {
-                // Unregistered card
+                // Unregistered
                 display.classList.add('error');
                 icon.textContent = '❌';
                 status.textContent = 'Kartu Belum Terdaftar';
                 studentInfo.style.display = 'none';
 
+                // Show Copy Button by default
+                copyBtn.style.display = 'flex';
+
+                // Check Validation: If Student Selected
+                if (studentSelect.value) {
+                     const selectedName = studentSelect.options[studentSelect.selectedIndex].text;
+                     
+                     // Show Alert
+                     matchAlert.style.display = 'block';
+                     matchAlert.innerHTML = `Kartu ini belum terdaftar. Tekan tombol di bawah untuk mendaftarkan ke <strong>${selectedName}</strong>`;
+                     
+                     // Show Link Button
+                     linkBtn.style.display = 'flex';
+                     linkBtn.innerHTML = `🔗 Daftarkan ke ${selectedName.split(' ')[0]}`; // Short name
+                     linkBtn.onclick = () => linkCardToStudent(data.rfid_uid, studentSelect.value);
+                     
+                     // Hide Copy Button to reduce clutter/confusion if we want them to link
+                     copyBtn.style.display = 'none'; 
+                }
+
                 addToHistory(data.rfid_uid, null, false);
             }
 
-            // Play success sound (optional)
             playBeep();
         }
 
+        async function linkCardToStudent(uid, studentId) {
+            if (!confirm('Apakah Anda yakin ingin mendaftarkan kartu ini ke siswa yang dipilih?')) return;
+
+            try {
+                linkBtn.disabled = true;
+                linkBtn.textContent = 'Mendaftarkan...';
+
+                const response = await fetch('{{ route("api.rfid.link") }}', {
+                    method: 'POST',
+                    headers: {
+                         'Content-Type': 'application/json',
+                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    },
+                    body: JSON.stringify({
+                        rfid_uid: uid,
+                        siswa_id: studentId
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('Berhasil! Kartu telah didaftarkan.');
+                    
+                    // Force display update to "Success"
+                    const display = document.getElementById('rfidDisplay');
+                    const icon = document.getElementById('rfidIcon');
+                    const status = document.getElementById('rfidStatus');
+                    const studentInfo = document.getElementById('studentInfo');
+                    const matchAlert = document.getElementById('studentMatchAlert');
+
+                    display.className = 'rfid-display success';
+                    icon.textContent = '✅';
+                    status.textContent = 'Kartu Terdaftar (Baru)';
+                    matchAlert.style.display = 'none';
+                    linkBtn.style.display = 'none';
+
+                    studentInfo.style.display = 'block';
+                    studentInfo.innerHTML = `
+                        <h3>📚 Informasi Siswa</h3>
+                        <div class="info-row">
+                            <span class="info-label">Nama:</span>
+                            <span class="info-value">${result.student.nama}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Status:</span>
+                            <span class="info-value">Baru Didaftarkan</span>
+                        </div>
+                    `;
+                    
+                    // Add to history as success
+                    addToHistory(uid, result.student.nama, true);
+
+                    // Reset selection to prevent accidental overwrite
+                    // studentSelect.value = ""; 
+                } else {
+                    alert('Gagal: ' + result.message);
+                }
+            } catch (e) {
+                console.error(e);
+                alert('Terjadi kesalahan saat mendaftarkan kartu.');
+            } finally {
+                linkBtn.disabled = false;
+                linkBtn.textContent = '🔗 Daftarkan Kartu';
+            }
+        }
+        
         function clearDisplay() {
             const display = document.getElementById('rfidDisplay');
             const icon = document.getElementById('rfidIcon');
             const uid = document.getElementById('rfidUid');
             const status = document.getElementById('rfidStatus');
             const studentInfo = document.getElementById('studentInfo');
-            const copyBtn = document.getElementById('copyBtn');
+            const matchAlert = document.getElementById('studentMatchAlert');
 
             display.className = 'rfid-display waiting';
             icon.textContent = '📡';
             uid.textContent = 'Menunggu kartu...';
             status.textContent = 'Silakan tap kartu RFID Anda';
             studentInfo.style.display = 'none';
+            matchAlert.style.display = 'none';
+            
             copyBtn.style.display = 'none';
+            linkBtn.style.display = 'none';
+            
             lastRfidUid = null;
         }
 
         function addToHistory(uid, name, isRegistered) {
-            const timestamp = new Date().toLocaleString('id-ID');
+            const timestamp = new Date().toLocaleTimeString('id-ID');
             const item = { uid, name, isRegistered, timestamp };
             
             history.unshift(item);
@@ -494,7 +717,7 @@
                     </div>
                     <div style="text-align: right;">
                         <span class="badge ${item.isRegistered ? 'badge-success' : 'badge-warning'}">
-                            ${item.isRegistered ? '✓ Terdaftar' : '⚠ Belum'}
+                            ${item.isRegistered ? '✓' : '⚠'}
                         </span>
                         <div class="history-time" style="margin-top: 4px;">${item.timestamp}</div>
                     </div>
@@ -502,6 +725,7 @@
             `).join('');
         }
 
+        // Copy Button Logic
         document.getElementById('copyBtn').addEventListener('click', () => {
             const uid = document.getElementById('rfidUid').textContent;
             navigator.clipboard.writeText(uid).then(() => {
@@ -515,42 +739,26 @@
         });
 
         function playBeep() {
-            // Simple beep sound using Web Audio API
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
 
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
 
-            oscillator.frequency.value = 800;
-            oscillator.type = 'sine';
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
 
-            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
 
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.1);
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.1);
+            } catch (e) {
+                console.log('Audio not supported');
+            }
         }
-
-        // For testing purposes - simulate RFID scan
-        function simulateRFID(uid, siswaData = null) {
-            const event = new CustomEvent('rfidScanned', {
-                detail: siswaData ? {
-                    status: 'success',
-                    rfid_uid: uid,
-                    data: siswaData
-                } : {
-                    status: 'error',
-                    rfid_uid: uid,
-                    message: 'RFID UID tidak terdaftar'
-                }
-            });
-            window.dispatchEvent(event);
-        }
-
-        // Expose for testing in console
-        window.simulateRFID = simulateRFID;
     </script>
 </body>
 </html>
